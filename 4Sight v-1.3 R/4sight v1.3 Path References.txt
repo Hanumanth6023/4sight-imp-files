@@ -1,0 +1,226 @@
+---------
+4SIGHT  -- http://34.197.55.42/4sight/index/testing/
+---------
+username :test
+password :Test@1234
+-----------------
+MARIADB --  3306
+-----------------
+systemctl start mariadb
+systemctl enable mariadb
+
+----------------------------------
+to setup root password for MariaDB
+----------------------------------
+mysql -u root
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 
+'<mariadb_password>'; 
+FLUSH PRIVILEGES;
+exit
+
+-----------------
+START NGINX -- 80
+-----------------
+
+1) login as root user
+
+2) service nginx start
+
+
+----------------- 
+KEYCLOAK -- 9990
+-----------------
+su - keycloak
+
+cd $KEYCLOAK_HOME
+sh ./bin/standalone.sh > keycloak.out &
+
+---------------------
+4SIGHT SERVER - 5000
+---------------------
+su - 4sight
+
+cd /4sight/4sightserver
+cd 4sightserver
+dos2unix train_models.sh
+dos2unix trigger_alerts.sh
+nohup gunicorn -b 0.0.0.0:5000 "app:create_app()" >> /dev/null 2>&1 &
+
+----------------------
+4SIGHTML SERVER - 6000
+----------------------
+
+su - 4sightml
+
+cd /4sight/4sightmlserver
+cd 4sightmlserver
+dos2unix run_tox.sh
+nohup gunicorn -b 0.0.0.0:6000 "app:create_app()" >> /dev/null 2>&1 &
+----------------------------------------------------------------------
+
+-------------------
+API'S FOR REFERENCE
+-------------------
+location /auth {    [----- FOR KEYCLOAK -----]
+ proxy_set_header X-Forwarded-For $proxy_protocol_addr;
+ proxy_set_header X-Forwarded-Proto $scheme;
+ proxy_set_header Host $host;
+ proxy_pass http://localhost:8080;
+}
+
+location /4sight/api {      [----- FOR 4SIGHTSERVER -----]
+ root html;
+ index index.html index.htm;
+ proxy_pass http://localhost:5000;
+ proxy_force_ranges on;
+}
+
+location / {             [----- FOR 4SIGHTMLSERVER -----]
+ root /usr/local/nginx/html/4Sight-UI;
+ index index.html;
+ try_files $uri /index.html;
+}
+
+-------------------------
+4Sight Portal -web login
+-------------------------
+
+http://34.197.55.42/4sight/index/testing/
+
+username:test
+password:Test@123
+
+
+
+ps -ef |grep 4sight  --- checking services
+tail -f 4sight ----
+kill -9 portno --for kill the process....
+
+-------------------------------------------------------------
+----------------
+METRIC BEAT
+----------------
+cd /4sight/metricbeat-7.6.0-linux-x86_64
+
+------
+START
+-----
+
+./metricbeat -e -c metricbeat.yml -d “publish” &
+
+
+ps -ef | grep metricbeat
+kill -9 <processid>
+
+--------------------------------------------------
+Logstash--5400  -- /opt/logstash
+
+--------------------------------------------------
+wget http
+rpm -ivh logstash-7.6.0.rpm
+
+./logstash --version
+
+chwon -R logstash:logstash /usr/share/logstash  -- in root only we need to change the permissions
+
+chmod -R 755 /usr/share/logstash
+
+
+
+
+
+--------------
+ELASTIC SEARCH -- 9200
+--------------
+
+Installation directory -- /opt/ES/elasticsearch-7.6.0
+
+su elasticsearch
+-----------------------
+1. Start Elasticsearch
+-------------------------
+***  elasticsearch &
+-----------------------------
+11. To stop elasticsearch
+-----------------------------
+ps -ef | grep elasticsearch
+kill -9 <processid>
+
+----------------
+LOGS
+----------------
+$ELASTICSEARCH_HOME/logs
+-------------------
+
+
+CREATE INDEX
+------------
+curl -XPUT http://localhost:9200/test            -- create index
+
+curl http://localhost:9200/_cat/indices                    --- display indexes
+
+curl -XGET "http://localhost:9200/companydatabase?pretty"     ---display pretty format
+
+curl -XPOST "HTTP://LOCALHOST:9200/my_test_index/MESSAGE" -d'
+  {
+          "text": "Hello world!"
+  }'
+
+
+-----------------------------
+34.197.55.42/auth ----keycloak
+
+username:admin
+password: Password123)
+
+
+34.197.55.42/4sightml/predictions?modelName=predictmemory
+
+--------------------------------------
+
+CONNECT 2 INSTANCES:
+----------------------------
+ telnet 44.206.38.57 9200
+----------------------------
+
+
+
+curl -XPUT --header 'Content-Type: application/json' http://localhost:9200/syed/_doc/1 -d '{
+"school" : "Harvard","Name":"Hanumanth","Company":"THBS"			
+}'
+
+
+curl -X GET http://localhost:9200/test/_search?q=school:Harvard
+
+wget https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-oss-7.6.0-linux-x86_64.tar.gz
+
+
+
+/usr/local/nginx/logs/access.log
+
+--------------------
+mail-configuration
+--------------------
+  mail                   pswd
+si_test@thbs.com --- dxtndnwlmltpnhpn
+
+
+
+
+[3:16 PM] Anjaneyulu Gudditi
+        defaultEmailId: si_test@thbs.com
+        defaultEmailPassword: TZgjXrR+WrjbvMDC4xXBhgfK7SbUNjQPtNCcWmZKZa/ncUCLEo9vZMl8djNPIA5m
+        defaultEmailSmtpsEnabled: false
+        defaultEmailTlsEnabled: true
+        defaultEmailPort: 587
+        defaultEmailSignature: APIConnect<br/>THBS
+        defaultEmailHost: smtp.office365.com
+        defaultFromEmailId: si_test@thbs.com
+
+
+
+
+
+
+
+
